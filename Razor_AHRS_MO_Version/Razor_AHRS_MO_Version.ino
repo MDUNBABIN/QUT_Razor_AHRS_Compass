@@ -294,13 +294,13 @@ float MAGN_Z_MAX = 600;
 
 // Magnetometer (extended calibration mode)
 // Set to true to use extended magnetometer calibration (compensates hard & soft iron errors)
-//boolean CALIBRATION__MAGN_USE_EXTENDED = false;
-//float magn_ellipsoid_center[3] = {0, 0, 0};
-//float magn_ellipsoid_transform[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+boolean CALIBRATION__MAGN_USE_EXTENDED = false;
+float magn_ellipsoid_center[3] = {0, 0, 0};
+float magn_ellipsoid_transform[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
-boolean CALIBRATION__MAGN_USE_EXTENDED = true;
-float magn_ellipsoid_center[3] = {415.390, 68.2502, 731.926};
-float magn_ellipsoid_transform[3][3] = {{0.978141, -0.00866569, 0.0172509}, {-0.00866569, 0.931101, -0.00333538}, {0.0172509, -0.00333538, 0.984804}};
+//boolean CALIBRATION__MAGN_USE_EXTENDED = true;
+//float magn_ellipsoid_center[3] = {415.390, 68.2502, 731.926};
+//float magn_ellipsoid_transform[3][3] = {{0.978141, -0.00866569, 0.0172509}, {-0.00866569, 0.931101, -0.00333538}, {0.0172509, -0.00333538, 0.984804}};
 
 // Gyroscope
 // "gyro x,y,z (current/average) = .../OFFSET_X  .../OFFSET_Y  .../OFFSET_Z
@@ -489,6 +489,15 @@ float Temporary_Matrix[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 float yaw = 0;
 float pitch = 0;
 float roll = 0;
+
+// Added by MDD
+int   numMoveAveCompass = 5;
+float Fx[5];
+float Fy[5];
+float Fz[5];
+float FxAve = 0.0;
+float FyAve = 0.0;
+float FzAve = 0.0;
 
 // DCM timing in the main loop
 unsigned long timestamp = 0;

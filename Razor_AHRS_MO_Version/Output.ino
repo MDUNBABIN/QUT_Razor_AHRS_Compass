@@ -10,6 +10,8 @@ PString   dataPkt( dataBuffer, sizeof( dataBuffer ) );      // ADDED MATTHEW DUN
    Output Y,P,R,Fx,Fy,Fz,Rz and do proper checksum calculations */ 
 void output_angles()
 {
+     int i;
+     
      if (output_format == OUTPUT__FORMAT_BINARY) {
           float ypr[3];  
           ypr[0] = TO_DEG(yaw);
@@ -21,35 +23,64 @@ void output_angles()
           // LOG_PORT.print(TO_DEG(yaw)); LOG_PORT.print(",");
           // LOG_PORT.print(TO_DEG(pitch)); LOG_PORT.print(",");
           // LOG_PORT.print(TO_DEG(roll)); LOG_PORT.println();
-          char crc = 0;
-          dataPkt.begin();
-          dataPkt.print( "$IMU," );
-          dataPkt.print( TO_DEG( yaw ) );
-          dataPkt.print( "," );
-          dataPkt.print( TO_DEG( pitch ) ); 
-          dataPkt.print( "," );
-          dataPkt.print( TO_DEG( roll ) );
-          dataPkt.print( "," );
-          dataPkt.print( magnetom[0] );
-          dataPkt.print( "," );
-          dataPkt.print( magnetom[1] );
-          dataPkt.print( "," );
-          dataPkt.print( magnetom[2] );
-          dataPkt.print( "," );
-          // dataPkt.print( gyro[0] );
-          // dataPkt.print( "," );
-          // dataPkt.print( gyro[1] );
-          // dataPkt.print( "," );
-          dataPkt.print( gyro[2] );
-          /* Calculate and print the CRC */
-          for (int k=1; k<dataPkt.length(); k++) {
-               crc^=dataBuffer[k];
+
+          if ( ( imu.mx != 0 ) && ( imu.my != 0 ) ) {
+               for ( i=1; i<numMoveAveCompass; i++ ) {
+                    Fx[i-1] = Fx[i];
+                    Fy[i-1] = Fy[i];
+                    Fz[i-1] = Fz[i];
+               }
+               Fx[numMoveAveCompass-1] = imu.mx;
+               Fy[numMoveAveCompass-1] = imu.my;
+               Fz[numMoveAveCompass-1] = imu.mz;
+
+               FxAve = 0.0;
+               FyAve = 0.0;
+               FzAve = 0.0;
+               for (i=0; i<numMoveAveCompass; i++ ) {
+                    FxAve += Fx[i];
+                    FyAve += Fy[i];
+                    FzAve += Fz[i];
+               }
+               FxAve = FxAve / (1.0 * numMoveAveCompass );
+               FyAve = FyAve / (1.0 * numMoveAveCompass );
+               FzAve = FzAve / (1.0 * numMoveAveCompass );
+               
+               char crc = 0;
+               dataPkt.begin();
+               dataPkt.print( "$IMU," );
+               dataPkt.print( TO_DEG( yaw ) );
+               dataPkt.print( "," );
+               dataPkt.print( TO_DEG( pitch ) ); 
+               dataPkt.print( "," );
+               dataPkt.print( TO_DEG( roll ) );
+               dataPkt.print( "," );
+               dataPkt.print( FxAve );
+               //dataPkt.print( magnetom[0] );
+               dataPkt.print( "," );
+               dataPkt.print( FyAve );
+               //dataPkt.print( magnetom[1] );
+               dataPkt.print( "," );
+               dataPkt.print( FzAve );
+               //dataPkt.print( magnetom[2] );
+               dataPkt.print( "," );
+               // dataPkt.print( gyro[0] );
+               // dataPkt.print( "," );
+               // dataPkt.print( gyro[1] );
+               // dataPkt.print( "," );
+               dataPkt.print( gyro[2] );
+               /* Calculate and print the CRC */
+               for (int k=1; k<dataPkt.length(); k++) {
+                    crc^=dataBuffer[k];
+               }
+               dataPkt.print( "*" );
+               if ( crc < 16 ) { dataPkt.print( "0" ); }
+               dataPkt.print( crc, HEX );
+               dataPkt.print( "\r\n" );
+               LOG_PORT.print( dataPkt );
+          } else {
+               LOG_PORT.println( "no data" );
           }
-          dataPkt.print( "*" );
-          if ( crc < 16 ) { dataPkt.print( "0" ); }
-          dataPkt.print( crc, HEX );
-          dataPkt.print( "\r\n" );
-          LOG_PORT.print( dataPkt );
      }
 }
 
